@@ -1,0 +1,234 @@
+{
+  "info": {
+    "name": "event-platform API Test",
+    "description": "活动报名平台 API 测试集合",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "健康检查",
+      "request": {
+        "method": "GET",
+        "url": "{{BASE_URL}}/api/health",
+        "description": "系统健康检查，无需认证"
+      }
+    },
+    {
+      "name": "认证",
+      "item": [
+        {
+          "name": "POST 注册用户",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('注册成功', function() { pm.response.to.have.status(201); });"] } }],
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"testuser\",\"email\":\"test@example.com\",\"password\":\"Test@123\",\"role\":\"USER\"}"
+            }
+          }
+        },
+        {
+          "name": "POST 登录",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('登录成功', function() { pm.response.to.have.status(200); });",
+                "var json = pm.response.json();",
+                "if (json.data && json.data.token) {",
+                "  pm.collectionVariables.set('TOKEN', json.data.token);",
+                "  pm.collectionVariables.set('USER_ID', json.data.user.id);",
+                "}"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"email\":\"test@example.com\",\"password\":\"Test@123\"}" }
+          }
+        },
+        {
+          "name": "GET 当前用户",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/auth/me",
+            "header": [{ "key": "Authorization", "value": "Bearer {{TOKEN}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "活动管理",
+      "item": [
+        {
+          "name": "GET 活动列表（公开）",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/activities?page=1&pageSize=10", "header": [] }
+        },
+        {
+          "name": "GET 活动详情（公开）",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/activities/1", "header": [] }
+        },
+        {
+          "name": "POST 创建活动（组织者）",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/activities",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"测试活动\",\"description\":\"这是描述\",\"category\":\"技术\",\"maxCapacity\":100,\"fee\":0,\"location\":\"线上\",\"startTime\":\"2026-05-01T09:00:00Z\",\"endTime\":\"2026-05-01T18:00:00Z\",\"regDeadline\":\"2026-04-30T23:59:00Z\"}"
+            }
+          }
+        },
+        {
+          "name": "PUT 修改活动（组织者）",
+          "request": {
+            "method": "PUT",
+            "url": "{{BASE_URL}}/api/activities/1",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"title\":\"测试活动-已更新\"}" }
+          }
+        },
+        {
+          "name": "PATCH 修改活动状态",
+          "request": {
+            "method": "PATCH",
+            "url": "{{BASE_URL}}/api/activities/1/status",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"status\":\"PUBLISHED\"}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "报名管理",
+      "item": [
+        {
+          "name": "POST 赛事报名",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/registrations/activities/1/register",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"realName\":\"张三\",\"phone\":\"13800138000\"}"
+            }
+          }
+        },
+        {
+          "name": "GET 我的报名记录",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/registrations/mine",
+            "header": [{ "key": "Authorization", "value": "Bearer {{TOKEN}}" }]
+          }
+        },
+        {
+          "name": "DELETE 取消报名",
+          "request": {
+            "method": "DELETE",
+            "url": "{{BASE_URL}}/api/registrations/activities/1/register",
+            "header": [{ "key": "Authorization", "value": "Bearer {{TOKEN}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "项目报名",
+      "item": [
+        {
+          "name": "GET 项目列表（公开）",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/projects", "header": [] }
+        },
+        {
+          "name": "POST 用户提交报名",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/projects/1/register",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"realName\":\"李四\",\"phone\":\"13900139000\",\"channel\":\"wx123\",\"answers\":{}}" }
+          }
+        },
+        {
+          "name": "GET 我的项目报名",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/projects/register/mine",
+            "header": [{ "key": "Authorization", "value": "Bearer {{TOKEN}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "通知",
+      "item": [
+        { "name": "GET 通知列表", "request": { "method": "GET", "url": "{{BASE_URL}}/api/notifications", "header": [{ "key": "Authorization", "value": "Bearer {{TOKEN}}" }] } },
+        { "name": "GET 未读数量", "request": { "method": "GET", "url": "{{BASE_URL}}/api/notifications/unread-count", "header": [{ "key": "Authorization", "value": "Bearer {{TOKEN}}" }] } },
+        { "name": "PATCH 全部已读", "request": { "method": "PATCH", "url": "{{BASE_URL}}/api/notifications/read-all", "header": [{ "key": "Authorization", "value": "Bearer {{TOKEN}}" }] } }
+      ]
+    },
+    {
+      "name": "文件上传",
+      "item": [
+        {
+          "name": "POST 上传图片",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/upload/image",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "body": { "mode": "formdata", "formdata": [{ "key": "file", "type": "file" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "权限验证",
+      "item": [
+        {
+          "name": "普通用户访问管理员接口（应返回 403）",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('权限不足 403', function() { pm.response.to.have.status(403); });"] } }],
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/admin/users",
+            "header": [{ "key": "Authorization", "value": "Bearer {{TOKEN}}" }]
+          }
+        },
+        {
+          "name": "未登录访问需认证接口（应返回 401）",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('未登录 401', function() { pm.response.to.have.status(401); });"] } }],
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/auth/me",
+            "header": []
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "BASE_URL", "value": "http://localhost:3000" },
+    { "key": "TOKEN", "value": "" },
+    { "key": "USER_ID", "value": "" }
+  ]
+}

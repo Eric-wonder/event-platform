@@ -1,0 +1,372 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── 用户表 ───────────────────────────────────────────────
+model User {
+  id           Int       @id @default(autoincrement())
+  username     String    @unique @db.VarChar(50)
+  email        String    @unique @db.VarChar(100)
+  passwordHash String    @map("password_hash") @db.VarChar(255)
+  role         Role      @default(USER)
+  avatar       String?   @db.VarChar(500)
+  phone        String?   @db.VarChar(20)
+  isBanned     Boolean   @default(false) @map("is_banned")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  activities            Activity[]
+  registrations         Registration[]
+  notifications         Notification[]
+  projectRegistrations  ProjectRegistration[]
+  channelAdmin          ChannelAdmin?
+
+  @@map("users")
+}
+
+enum Role {
+  USER
+  ORGANIZER
+  ADMIN
+  CHANNEL_MANAGER
+}
+
+// ─── 分销渠道表 ───────────────────────────────────────────
+model Channel {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  code        String    @unique @db.VarChar(50)
+  description String?   @db.VarChar(500)
+  rate        Decimal   @default(0.10) @db.Decimal(5, 4)
+  isEnabled   Boolean   @default(true) @map("is_enabled")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  admins     ChannelAdmin[]
+  commissions CommissionRecord[]
+
+  @@map("channels")
+}
+
+// ─── 渠道管理员表 ─────────────────────────────────────────
+model ChannelAdmin {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique @map("user_id")
+  channelId Int      @map("channel_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id])
+  channel Channel @relation(fields: [channelId], references: [id])
+
+  @@map("channel_admins")
+}
+
+// ─── 佣金记录表 ───────────────────────────────────────────
+model CommissionRecord {
+  id             Int       @id @default(autoincrement())
+  channelId      Int       @map("channel_id")
+  projectId      Int       @map("project_id")
+  registrationId Int       @unique @map("registration_id")
+  adminId        Int?      @map("admin_id")
+  orderAmount    Decimal   @default(0) @db.Decimal(10, 2)
+  rate           Decimal   @db.Decimal(5, 4)
+  amount         Decimal   @default(0) @db.Decimal(10, 2)
+  status         ComStatus @default(PENDING) @map("status")
+  settledAt      DateTime? @db.DateTime              @map("settled_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  channel      Channel               @relation(fields: [channelId], references: [id])
+  registration ProjectRegistration   @relation(fields: [registrationId], references: [id])
+  project      RegistrationProject   @relation(fields: [projectId], references: [id])
+  admin        ChannelAdmin?         @relation(fields: [adminId], references: [id])
+
+  @@index([channelId, status])
+  @@index([adminId])
+  @@map("commission_records")
+}
+
+enum ComStatus {
+  PENDING
+  SETTLED
+  CANCELLED
+}
+
+// ─── 报名项目表 ────────────────────────────────────────────
+model RegistrationProject {
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(200)
+  coverImage  String?   @map("cover_image") @db.VarChar(500)
+  content     String    @db.LongText
+  price       Decimal   @default(0) @db.Decimal(10, 2)
+  isEnabled   Boolean   @default(true) @map("is_enabled")
+  deadline    DateTime? @db.DateTime
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  registrations ProjectRegistration[]
+  fields        ProjectField[]
+  commissions   CommissionRecord[]
+
+  @@map("registration_projects")
+}
+
+// ─── 项目表单字段定义表 ───────────────────────────────────
+model ProjectField {
+  id          Int         @id @default(autoincrement())
+  projectId   Int         @map("project_id")
+  label       String      @db.VarChar(100)
+  fieldType   FieldType   @map("field_type")
+  required    Boolean     @default(false)
+  placeholder String?     @db.VarChar(200)
+  options     String?     @db.Text
+  sortOrder   Int         @default(0) @map("sort_order")
+  validation  String?     @db.VarChar(500)
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  project      RegistrationProject         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  registrations ProjectRegistrationField[]
+
+  @@index([projectId, sortOrder])
+  @@map("project_fields")
+}
+
+enum FieldType {
+  TEXT
+  TEXTAREA
+  SELECT
+  RADIO
+  CHECKBOX
+  DATE
+  FILE
+}
+
+// ─── 项目报名记录 ──────────────────────────────────────────
+model ProjectRegistration {
+  id        Int       @id @default(autoincrement())
+  projectId Int       @map("project_id")
+  userId    Int       @map("user_id")
+  realName  String    @map("real_name") @db.VarChar(50)
+  phone     String    @db.VarChar(20)
+  channel   String?   @db.VarChar(100)
+  answers   Json?
+  payStatus PayStatus @default(FREE) @map("pay_status")
+  status    RegStatus @default(PENDING) @map("status")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  project     RegistrationProject        @relation(fields: [projectId], references: [id])
+  user       User                       @relation(fields: [userId], references: [id])
+  fields     ProjectRegistrationField[]
+  commission CommissionRecord?
+  payOrder   PayOrder?
+
+  @@unique([projectId, userId])
+  @@index([projectId, status])
+  @@index([channel])
+  @@map("project_registrations")
+}
+
+enum RegStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum PayStatus {
+  FREE
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+// ─── 报名文件答案表 ────────────────────────────────────────
+model ProjectRegistrationField {
+  id             Int      @id @default(autoincrement())
+  registrationId Int      @map("registration_id")
+  fieldId        Int      @map("field_id")
+  value          String   @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  registration ProjectRegistration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  field        ProjectField       @relation(fields: [fieldId], references: [id])
+
+  @@map("project_registration_fields")
+}
+
+// ─── 微信支付订单表 ────────────────────────────────────────
+model PayOrder {
+  id             Int         @id @default(autoincrement())
+  outTradeNo     String      @unique @db.VarChar(64)   // 商户订单号
+  transactionId  String?     @db.VarChar(64)           // 微信支付订单号（回调后填充）
+  registrationId Int         @unique @map("registration_id")
+  userId        Int         @map("user_id")
+  amount        Decimal     @db.Decimal(10, 2)         // 订单金额（元）
+  currency       String      @default("CNY") @db.VarChar(10)
+  payStatus     WxPayStatus  @default(PENDING) @map("pay_status")
+  tradeType     String?     @db.VarChar(32)            // NATIVE / JSAPI / APP
+  codeUrl       String?     @db.VarChar(256)           // NATIVE 扫码支付 URL
+  prepayId      String?     @db.VarChar(64)            // JSAPI 预支付 id
+  paidAt        DateTime?   @db.DateTime              @map("paid_at")
+  expireAt      DateTime    @map("expire_at")          // 订单过期时间
+  notifyData    String?     @db.LongText              // 回调原始数据（JSON 字符串）
+  errorMsg      String?     @db.VarChar(256)
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  registration ProjectRegistration @relation(fields: [registrationId], references: [id])
+
+  @@index([userId, payStatus])
+  @@index([outTradeNo])
+  @@map("pay_orders")
+}
+
+enum WxPayStatus {
+  PENDING    // 待支付
+  SUCCESS    // 支付成功
+  REFUNDED   // 已退款
+  CLOSED     // 订单关闭（超时）
+  FAILED     // 支付失败
+}
+
+// ─── 活动表（已有）────────────────────────────────────────
+model Activity {
+  id           Int            @id @default(autoincrement())
+  title        String         @db.VarChar(200)
+  description  String         @db.Text
+  coverImage   String?        @map("cover_image") @db.VarChar(500)
+  category     String         @db.VarChar(50)
+  status       ActivityStatus @default(DRAFT)
+  maxCapacity  Int            @map("max_capacity")
+  currentCount Int            @default(0) @map("current_count")
+  fee          Decimal         @default(0) @db.Decimal(10, 2)
+  location     String         @db.VarChar(300)
+  startTime    DateTime       @map("start_time")
+  endTime      DateTime       @map("end_time")
+  regDeadline  DateTime       @map("reg_deadline")
+  organizerId   Int            @map("organizer_id")
+  isDeleted     Boolean        @default(false) @map("is_deleted")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  organizer     User          @relation(fields: [organizerId], references: [id])
+  registrations Registration[]
+
+  @@index([status, startTime])
+  @@index([organizerId])
+  @@map("activities")
+}
+
+enum ActivityStatus {
+  DRAFT
+  PUBLISHED
+  FULL
+  ENDED
+  CANCELLED
+}
+
+// ─── 赛事报名记录（已有）──────────────────────────────────
+model Registration {
+  id           Int                @id @default(autoincrement())
+  activityId   Int                @map("activity_id")
+  userId       Int                @map("user_id")
+  status       RegistrationStatus @default(PENDING)
+  realName     String             @map("real_name") @db.VarChar(50)
+  phone        String             @db.VarChar(20)
+  idCard       String?            @map("id_card") @db.VarChar(20)
+  remark       String?           @db.Text
+  payStatus    PayStatus          @default(FREE) @map("pay_status")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+
+  activity    Activity     @relation(fields: [activityId], references: [id])
+  user        User         @relation(fields: [userId], references: [id])
+  fieldAnswers FieldAnswer[]
+
+  @@unique([activityId, userId])
+  @@index([activityId, status])
+  @@map("registrations")
+}
+
+enum RegistrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+// ─── 赛事自定义表单字段（已有）────────────────────────────
+model FormField {
+  id         Int       @id @default(autoincrement())
+  activityId Int       @map("activity_id")
+  label      String    @db.VarChar(100)
+  fieldType  FieldType @map("field_type")
+  required   Boolean   @default(false)
+  options    String?   @db.Text
+  sortOrder  Int       @default(0) @map("sort_order")
+
+  activity Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  answers  FieldAnswer[]
+
+  @@map("form_fields")
+}
+
+// ─── 赛事字段答案（已有）──────────────────────────────────
+model FieldAnswer {
+  id             Int          @id @default(autoincrement())
+  registrationId Int          @map("registration_id")
+  fieldId        Int          @map("field_id")
+  value          String       @db.Text
+
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  field        FormField    @relation(fields: [fieldId], references: [id])
+
+  @@map("field_answers")
+}
+
+// ─── 通知表（已有）────────────────────────────────────────
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  title     String   @db.VarChar(200)
+  content   String   @db.Text
+  isRead    Boolean  @default(false) @map("is_read")
+  type      String   @db.VarChar(50)
+  refId     Int?     @map("ref_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+// ─── 邮件发送日志表 ────────────────────────────────────────
+model EmailLog {
+  id        Int        @id @default(autoincrement())
+  type      String     @db.VarChar(50)
+  subject   String     @db.VarChar(300)
+  toEmails  String     @db.Text
+  status    EmailStatus @default(SENT) @map("status")
+  error     String?    @db.Text
+  sentAt    DateTime?  @db.DateTime @map("sent_at")
+  remark    String?    @db.VarChar(500)
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  @@index([type, status])
+  @@map("email_logs")
+}
+
+enum EmailStatus {
+  SENT
+  FAILED
+  PENDING
+}
