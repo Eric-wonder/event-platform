@@ -64,6 +64,7 @@ model ChannelAdmin {
 
   user    User    @relation(fields: [userId], references: [id])
   channel Channel @relation(fields: [channelId], references: [id])
+  commissions CommissionRecord[]
 
   @@map("channel_admins")
 }
@@ -259,6 +260,7 @@ model Activity {
 
   organizer     User          @relation(fields: [organizerId], references: [id])
   registrations Registration[]
+  formFields    FormField[]
 
   @@index([status, startTime])
   @@index([organizerId])
