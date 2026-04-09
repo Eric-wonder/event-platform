@@ -7,8 +7,8 @@ const { success, fail, catchAsync } = require('../utils/response');
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// 所有路由均需要 ADMIN 角色（requireRole('ADMIN') 已挂载）
-router.use(requireRole('ADMIN'));
+// 所有路由均需要认证 + ADMIN 角色
+router.use(auth, requireRole('ADMIN'));
 
 const VALID_ROLES = ['USER', 'ORGANIZER', 'ADMIN', 'CHANNEL_MANAGER'];
 

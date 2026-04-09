@@ -52,6 +52,12 @@ const routes = [
         component: () => import('../views/ActivityCreate.vue'),
         meta: { roles: ['ORGANIZER', 'ADMIN'] },
       },
+      {
+        path: 'activities/:id/registrations',
+        name: 'ActivityRegistrations',
+        component: () => import('../views/ActivityRegistrations.vue'),
+        meta: { roles: ['ORGANIZER', 'ADMIN'] },
+      },
 
       // 报名项目（用户端）
       {

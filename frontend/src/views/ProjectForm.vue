@@ -82,13 +82,30 @@
         </el-form-item>
       </el-form>
     </el-card>
+
+    <!-- 分享链接对话框 -->
+    <el-dialog v-model="showShareDialog" title="报名项目创建成功" width="500px" :close-on-click-modal="false">
+      <div style="text-align:center;padding:20px 0">
+        <el-icon style="font-size:48px;color:#67c23a"><SuccessFilled /></el-icon>
+        <h3 style="margin:16px 0">项目已创建成功！</h3>
+        <p style="color:#888;margin-bottom:16px">复制下方链接分享给用户报名</p>
+        <el-input v-model="shareLink" readonly style="margin-bottom:16px">
+          <template #append>
+            <el-button @click="copyShareLink">复制</el-button>
+          </template>
+        </el-input>
+        <el-button type="primary" @click="goToProject">查看项目详情</el-button>
+        <el-button @click="router.push('/admin/projects')">返回列表</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { SuccessFilled } from '@element-plus/icons-vue'
 import { projectApi, uploadApi } from '../api/client'
 import { useUserStore } from '../stores/user'
 import E from 'wangeditor'
@@ -153,6 +170,10 @@ const initEditor = (content = '') => {
     editor.value.destroy()
     editor.value = null
   }
+  if (!editorRef.value) {
+    console.warn('editorRef not ready')
+    return
+  }
   editor.value = new E(editorRef.value)
   editor.value.config.uploadImgServer = `${import.meta.env.VITE_API_BASE_URL || '/api'}/upload/image`
   editor.value.config.uploadImgHeaders = { Authorization: `Bearer ${token}` }
@@ -187,6 +208,22 @@ const loadProject = async () => {
   } finally { loading.value = false }
 }
 
+// 分享链接相关
+const showShareDialog = ref(false)
+const shareLink = ref('')
+const createdProjectId = ref(null)
+
+const copyShareLink = () => {
+  navigator.clipboard.writeText(shareLink.value)
+  ElMessage.success('链接已复制到剪贴板')
+}
+
+const goToProject = () => {
+  if (createdProjectId.value) {
+    router.push(`/projects/${createdProjectId.value}`)
+  }
+}
+
 // 提交
 const handleSubmit = async () => {
   const valid = await formRef.value.validate().catch(() => false)
@@ -213,11 +250,15 @@ const handleSubmit = async () => {
     if (isEdit.value) {
       await projectApi.update(projectId.value, payload)
       ElMessage.success('保存成功')
+      router.push('/admin/projects')
     } else {
-      await projectApi.create(payload)
+      const res = await projectApi.create(payload)
       ElMessage.success('创建成功')
+      // 显示分享链接
+      createdProjectId.value = res.data?.id
+      shareLink.value = `${window.location.origin}/projects/${createdProjectId.value}`
+      showShareDialog.value = true
     }
-    router.push('/admin/projects')
   } catch {
     // 错误已在拦截器处理
   } finally {
@@ -226,13 +267,16 @@ const handleSubmit = async () => {
 }
 
 onMounted(async () => {
-  // 动态加载 wangEditor（需要 npm install wangeditor）
   try {
     await loadProject()
-    if (!isEdit.value) initEditor()
+    // 确保 DOM 渲染完成后再初始化编辑器
+    await nextTick()
+    if (!isEdit.value) {
+      // 新建模式：等待 DOM 准备好
+      setTimeout(() => initEditor(), 50)
+    }
   } catch (e) {
-    // wangEditor 未安装时降级为 textarea
-    console.warn('wangEditor 未安装，将在控制台提示后使用 textarea')
+    console.warn('编辑器初始化失败:', e)
   }
 })
 
