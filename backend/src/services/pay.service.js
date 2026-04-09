@@ -336,7 +336,7 @@ function verifyCallbackSignature(body, sig, t, n) {
  * 返回 { success: true/false, message }
  */
 async function handleNotify(rawBody, headers) {
-  const { Wechatpay-Signature: sig, Wechatpay-Timestamp: t, Wechatpay-Nonce: n } = headers;
+  const { 'Wechatpay-Signature': sig, 'Wechatpay-Timestamp': t, 'Wechatpay-Nonce': n } = headers;
 
   if (!verifyCallbackSignature(rawBody, sig, t, n)) {
     console.error('[WeChatPay] 回调签名验证失败');
