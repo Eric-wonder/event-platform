@@ -1,8 +1,7 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { auth } = require('../middleware/auth.middleware');
-const { catchAsync } = require('../utils/catchAsync');
-const { success, fail } = require('../utils/response');
+const { success, fail, catchAsync } = require('../utils/response');
 
 const router = express.Router({ mergeParams: true });
 const prisma = new PrismaClient();

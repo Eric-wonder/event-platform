@@ -17,8 +17,7 @@
  */
 const express = require('express');
 const { auth } = require('../middleware/auth.middleware');
-const { catchAsync } = require('../utils/catchAsync');
-const { success, fail } = require('../utils/response');
+const { success, fail, catchAsync } = require('../utils/response');
 const {
   createNativeOrder, createJsapiOrder, queryOrder, closeOrder,
   handleNotify, isMockMode, genOutTradeNo,

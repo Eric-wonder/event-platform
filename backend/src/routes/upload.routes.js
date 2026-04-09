@@ -3,8 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { auth } = require('../middleware/auth.middleware');
-const { catchAsync } = require('../utils/catchAsync');
-const { success, fail } = require('../utils/response');
+const { success, fail, catchAsync } = require('../utils/response');
 
 const router = express.Router();
 

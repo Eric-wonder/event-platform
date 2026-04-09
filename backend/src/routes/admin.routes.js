@@ -2,8 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
 const { auth, requireRole } = require('../middleware/auth.middleware');
-const { catchAsync } = require('../utils/catchAsync');
-const { success, fail } = require('../utils/response');
+const { success, fail, catchAsync } = require('../utils/response');
 
 const router = express.Router();
 const prisma = new PrismaClient();
