@@ -37,7 +37,6 @@ router.get('/users', catchAsync(async (req, res) => {
             registrations: true,
             projectRegistrations: true,
             activities: true,
-            channelAdmin: true,
           },
         },
       },
