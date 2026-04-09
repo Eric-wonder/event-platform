@@ -14,7 +14,7 @@
     "axios": "^1.6.0",
     "element-plus": "^2.4.0",
     "@element-plus/icons-vue": "^2.3.0",
-    "wangeditor": "^5.1.0",
+    "wangeditor": "^4.7.15",
     "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
