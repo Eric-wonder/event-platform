@@ -12,6 +12,27 @@ async function checkNotBanned(userId) {
   if (user?.isBanned) { const e = new Error('账号已被封禁'); e.status = 403; throw e; }
 }
 
+// ─── 获取我的报名记录 ─────────────────────────────────────
+router.get('/register/mine', auth, catchAsync(async (req, res) => {
+  await checkNotBanned(req.user.userId);
+  const list = await prisma.projectRegistration.findMany({
+    where: { userId: req.user.userId },
+    include: {
+      project: {
+        select: {
+          id: true,
+          title: true,
+          coverImage: true,
+          price: true,
+          deadline: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+  res.json(success(list.map(r => ({ ...r, price: Number(r.project.price) }))));
+}));
+
 // ─── 公开列表 ─────────────────────────────────────────────
 router.get('/', optionalAuth, catchAsync(async (req, res) => {
   const { page = 1, pageSize = 10, keyword, isEnabled } = req.query;
