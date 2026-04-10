@@ -8,7 +8,7 @@
 
     <el-alert type="info" :closable="false" style="margin-bottom:20px">
       <b>SMTP 配置</b>（环境变量，仅管理员可见）：<br>
-      <code style="font-size:12px">SMTP_HOST={{ settings.smtpHost }}&nbsp;&nbsp; SMTP_PORT={{ settings.smtpPort }}&nbsp;&nbsp; SMTP_USER={{ settings.smtpUser }}&nbsp;&nbsp; SMTP_PASS={{ settings.smtpHasPass ? '******' : '❌ 未配置' }}</code>
+      <code style="font-size:12px">SMTP_HOST={{ form.smtpHost || '未配置' }}&nbsp;&nbsp; SMTP_PORT={{ form.smtpPort || '未配置' }}&nbsp;&nbsp; SMTP_USER={{ form.smtpUser || '未配置' }}&nbsp;&nbsp; SMTP_PASS={{ form.smtpHasPass ? '******' : '❌ 未配置' }}</code>
     </el-alert>
 
     <el-form ref="formRef" :model="form" label-width="140px" style="max-width:640px">
