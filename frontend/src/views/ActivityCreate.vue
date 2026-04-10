@@ -1,7 +1,7 @@
 <template>
   <el-card>
     <template #header><h3>发布活动</h3></template>
-    <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
+    <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
       <el-form-item label="活动标题" prop="title">
         <el-input v-model="form.title" placeholder="输入活动名称" />
       </el-form-item>
@@ -14,12 +14,12 @@
         <el-input v-model="form.description" type="textarea" :rows="5" placeholder="详细描述活动内容" />
       </el-form-item>
       <el-row :gutter="16">
-        <el-col :span="12">
+        <el-col :xs="24" :sm="12">
           <el-form-item label="最大人数" prop="maxCapacity">
             <el-input-number v-model="form.maxCapacity" :min="1" :max="100000" />
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <el-col :xs="24" :sm="12">
           <el-form-item label="报名费用(元)" prop="fee">
             <el-input-number v-model="form.fee" :min="0" :precision="2" />
           </el-form-item>
@@ -29,17 +29,17 @@
         <el-input v-model="form.location" placeholder="详细地址" />
       </el-form-item>
       <el-row :gutter="16">
-        <el-col :span="8">
+        <el-col :xs="24" :sm="24" :md="8">
           <el-form-item label="开始时间" prop="startTime">
             <el-date-picker v-model="form.startTime" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss[Z]" style="width:100%" />
           </el-form-item>
         </el-col>
-        <el-col :span="8">
+        <el-col :xs="24" :sm="24" :md="8">
           <el-form-item label="结束时间" prop="endTime">
             <el-date-picker v-model="form.endTime" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss[Z]" style="width:100%" />
           </el-form-item>
         </el-col>
-        <el-col :span="8">
+        <el-col :xs="24" :sm="24" :md="8">
           <el-form-item label="报名截止" prop="regDeadline">
             <el-date-picker v-model="form.regDeadline" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss[Z]" style="width:100%" />
           </el-form-item>

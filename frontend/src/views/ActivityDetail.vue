@@ -10,14 +10,14 @@
 
     <el-row :gutter="24">
       <!-- 左侧详情 -->
-      <el-col :span="16">
+      <el-col :xs="24" :sm="24" :md="16">
         <el-card>
           <template #header><h3>活动详情</h3></template>
           <div class="description" v-html="activity.description"></div>
 
           <el-divider />
 
-          <el-descriptions :column="2" border>
+          <el-descriptions :column="isMobile ? 1 : 2" border>
             <el-descriptions-item label="分类">{{ activity.category }}</el-descriptions-item>
             <el-descriptions-item label="费用">¥{{ activity.fee === 0 ? '免费' : activity.fee }}</el-descriptions-item>
             <el-descriptions-item label="活动地点">{{ activity.location }}</el-descriptions-item>
@@ -32,7 +32,7 @@
         <!-- 报名表单 -->
         <el-card v-if="showRegForm" class="reg-card">
           <template #header><h3>立即报名</h3></template>
-          <el-form ref="regFormRef" :model="regForm" :rules="regRules" label-width="100px">
+          <el-form ref="regFormRef" :model="regForm" :rules="regRules" label-position="top">
             <el-form-item label="真实姓名" prop="realName">
               <el-input v-model="regForm.realName" placeholder="请输入真实姓名" />
             </el-form-item>
@@ -61,7 +61,7 @@
       </el-col>
 
       <!-- 右侧操作栏 -->
-      <el-col :span="8">
+      <el-col :xs="24" :sm="24" :md="8">
         <el-card v-if="isOwner || isAdmin">
           <template #header><h3>管理操作</h3></template>
           <el-space direction="vertical" style="width:100%">
@@ -78,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../stores/user'
@@ -93,6 +93,7 @@ const regLoading = ref(false)
 const activity = ref({})
 const regFormRef = ref()
 const regForm = ref({ realName: '', phone: '', fieldAnswers: {} })
+const isMobile = ref(window.innerWidth < 768)
 const regRules = {
   realName: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
   phone: [{ required: true, pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur' }],
@@ -142,7 +143,7 @@ onMounted(fetchDetail)
 
 <style scoped>
 .cover-banner {
-  height: 280px;
+  height: 200px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   background-size: cover;
   background-position: center;
@@ -150,6 +151,11 @@ onMounted(fetchDetail)
   margin-bottom: 24px;
   position: relative;
   overflow: hidden;
+}
+@media (max-width: 768px) {
+  .cover-banner { height: 160px; border-radius: 0; margin-bottom: 12px; }
+  .activity-title { font-size: 20px; }
+  .cover-overlay { padding: 12px; flex-direction: column; gap: 8px; }
 }
 .cover-overlay {
   position: absolute;

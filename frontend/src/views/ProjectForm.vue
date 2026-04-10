@@ -14,13 +14,13 @@
         </el-form-item>
 
         <el-row :gutter="20">
-          <el-col :span="12">
+          <el-col :xs="24" :sm="12">
             <el-form-item label="报名费用" prop="price">
               <el-input-number v-model="form.price" :min="0" :precision="2" :step="0.01" style="width:100%" />
               <span style="margin-left:8px;color:#888">元（设为0则为免费）</span>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :xs="24" :sm="12">
             <el-form-item label="报名截止" prop="deadline">
               <el-date-picker
                 v-model="form.deadline"
