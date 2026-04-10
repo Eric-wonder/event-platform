@@ -24,7 +24,7 @@
     <el-card class="form-card" v-if="project && (!alreadyRegistered || editMode)">
       <template #header><h3>📝 填写报名信息</h3></template>
 
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="140px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
         <!-- 姓名 -->
         <el-form-item label="真实姓名" prop="realName">
           <el-input v-model="form.realName" placeholder="请输入真实姓名" maxlength="50" />
@@ -391,10 +391,10 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.reg-form-page { max-width: 800px; margin: 0 auto; }
-.project-header { display: flex; gap: 20px; margin-bottom: 20px; align-items: flex-start; }
+.reg-form-page { max-width: 800px; margin: 0 auto; padding: 0 12px; }
+.project-header { display: flex; gap: 20px; margin-bottom: 20px; align-items: flex-start; flex-wrap: wrap; }
 .project-cover { flex-shrink: 0; }
-.project-cover img { width: 200px; border-radius: 8px; display: block; }
+.project-cover img { width: 200px; max-width: 100%; border-radius: 8px; display: block; }
 .project-info h2 { margin-top: 0; }
 .project-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
 .project-content { font-size: 14px; color: #555; line-height: 1.7; }

@@ -5,7 +5,7 @@
         <h3>{{ isEdit ? '编辑报名项目' : '创建报名项目' }}</h3>
       </template>
 
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
         <!-- 基本信息 -->
         <el-divider content-position="left">基本信息</el-divider>
 

@@ -28,4 +28,22 @@ body {
 #app {
   min-height: 100vh;
 }
+
+/* 全局移动端适配 */
+.el-table {
+  max-width: 100%;
+}
+.el-card {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+@media (max-width: 768px) {
+  .el-form--label-top .el-form-item__label {
+    padding-bottom: 2px;
+  }
+  .el-dialog {
+    width: calc(100vw - 32px) !important;
+    margin: 16px auto !important;
+  }
+}
 </style>

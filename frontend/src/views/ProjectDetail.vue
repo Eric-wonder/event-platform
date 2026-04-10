@@ -7,7 +7,7 @@
 
     <el-row :gutter="20">
       <!-- 主内容 -->
-      <el-col :span="18">
+      <el-col :xs="24" :sm="24" :md="18">
         <el-card>
           <template #header>
             <div class="card-header">
@@ -34,9 +34,9 @@
       </el-col>
 
       <!-- 侧边栏 -->
-      <el-col :span="6">
+      <el-col :xs="24" :sm="24" :md="6">
         <!-- 报名卡片 -->
-        <el-card class="reg-sidebar">
+        <el-card class="reg-sidebar" style="margin-top: 16px;"
           <div class="price-tag" v-if="project.price > 0">
             <span class="price-num">¥{{ project.price }}</span>
             <span class="price-unit">元</span>
