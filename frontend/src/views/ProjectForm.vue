@@ -171,22 +171,29 @@ const initEditor = (content = '') => {
     editor.value = null
   }
   if (!editorRef.value) {
-    console.warn('editorRef not ready')
+    console.warn('[Editor] editorRef not ready, retrying in 100ms...')
+    setTimeout(() => initEditor(content), 100)
     return
   }
-  editor.value = new E(editorRef.value)
-  editor.value.config.uploadImgServer = `${import.meta.env.VITE_API_BASE_URL || '/api'}/upload/image`
-  editor.value.config.uploadImgHeaders = { Authorization: `Bearer ${token}` }
-  editor.value.config.uploadFileName = 'file'
-  editor.value.config.uploadImgHooks = {
-    success: () => ElMessage.success('图片上传成功'),
-    fail: () => ElMessage.error('图片上传失败'),
-    error: () => ElMessage.error('图片上传出错'),
-  }
-  editor.value.config.placeholder = '请输入项目详情，支持文字、图片、表格等富文本格式...'
-  editor.value.create()
-  if (content) {
-    editor.value.txt.html(content)
+  try {
+    editor.value = new E(editorRef.value)
+    editor.value.config.uploadImgServer = `${import.meta.env.VITE_API_BASE_URL || '/api'}/upload/image`
+    editor.value.config.uploadImgHeaders = { Authorization: `Bearer ${localStorage.getItem('token') || ''}` }
+    editor.value.config.uploadFileName = 'file'
+    editor.value.config.uploadImgHooks = {
+      success: () => ElMessage.success('图片上传成功'),
+      fail: () => ElMessage.error('图片上传失败'),
+      error: () => ElMessage.error('图片上传出错'),
+    }
+    editor.value.config.placeholder = '请输入项目详情，支持文字、图片、表格等富文本格式...'
+    editor.value.config.zIndex = 100
+    editor.value.create()
+    if (content) {
+      editor.value.txt.html(content)
+    }
+    console.log('[Editor] wangEditor initialized successfully')
+  } catch (e) {
+    console.error('[Editor] wangEditor init failed:', e)
   }
 }
 
@@ -231,6 +238,7 @@ const handleSubmit = async () => {
 
   // 从编辑器取值
   const content = editor.value ? editor.value.txt.html() : form.content
+  console.log('[Submit] editor exists:', !!editor.value, 'content length:', content?.length, 'content:', content?.substring(0, 100))
   if (!content || content === '<p><br></p>') {
     ElMessage.error('请输入项目详情')
     return
@@ -271,10 +279,14 @@ onMounted(async () => {
     await loadProject()
     // 确保 DOM 渲染完成后再初始化编辑器
     await nextTick()
-    if (!isEdit.value) {
-      // 新建模式：等待 DOM 准备好
-      setTimeout(() => initEditor(), 50)
-    }
+    // 等待两帧确保 wangEditor 容器完全就绪
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (!isEdit.value) {
+          initEditor()
+        }
+      })
+    })
   } catch (e) {
     console.warn('编辑器初始化失败:', e)
   }
