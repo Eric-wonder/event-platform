@@ -36,7 +36,7 @@
       <!-- 侧边栏 -->
       <el-col :xs="24" :sm="24" :md="6">
         <!-- 报名卡片 -->
-        <el-card class="reg-sidebar" style="margin-top: 16px;"
+        <el-card class="reg-sidebar" style="margin-top: 16px;">
           <div class="price-tag" v-if="project.price > 0">
             <span class="price-num">¥{{ project.price }}</span>
             <span class="price-unit">元</span>
