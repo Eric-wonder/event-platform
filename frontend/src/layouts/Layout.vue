@@ -1,8 +1,15 @@
 <template>
   <el-container class="layout-container">
-    <el-aside width="220px" class="sidebar">
-      <div class="logo">🏆 活动平台</div>
-      <el-menu :default-active="$route.path" router class="sidebar-menu">
+    <!-- 移动端遮罩 -->
+    <div v-if="isMobile && !isCollapse" class="mobile-mask" @click="isCollapse = true"></div>
+    
+    <!-- 侧边栏 -->
+    <el-aside :width="isMobile ? '0px' : (isCollapse ? '64px' : '220px')" class="sidebar" :class="{ 'sidebar-mobile': isMobile, 'sidebar-open': isMobile && !isCollapse }">
+      <div class="logo">
+        <span v-if="!isCollapse || isMobile">🏆 活动平台</span>
+        <span v-else>🏆</span>
+      </div>
+      <el-menu :default-active="$route.path" router class="sidebar-menu" :collapse="!isMobile && isCollapse">
 
         <el-menu-item index="/activities"><span>活动列表</span></el-menu-item>
         <el-menu-item index="/my-registrations"><span>我的报名</span></el-menu-item>
@@ -35,25 +42,33 @@
       </el-menu>
 
       <!-- 用户信息 -->
-      <div class="user-panel">
+      <div class="user-panel" v-if="!isMobile || !isCollapse">
         <el-avatar :size="36" :src="userStore.userInfo?.avatar">
           {{ userStore.userInfo?.username?.[0]?.toUpperCase() }}
         </el-avatar>
-        <div class="user-info">
+        <div class="user-info" v-if="!isCollapse || isMobile">
           <div class="username">{{ userStore.userInfo?.username }}</div>
           <div class="role-tag">{{ roleLabel }}</div>
         </div>
-        <el-button text @click="handleLogout" title="退出登录">
+        <el-button text @click="handleLogout" title="退出登录" v-if="!isCollapse || isMobile">
           <el-icon><ArrowRight /></el-icon>
         </el-button>
       </div>
     </el-aside>
 
-    <el-container>
+    <el-container class="main-container">
       <el-header class="header">
+        <!-- 移动端菜单按钮 -->
+        <el-button v-if="isMobile" text @click="isCollapse = false" class="menu-btn">
+          <el-icon size="24"><Menu /></el-icon>
+        </el-button>
+        <!-- PC端折叠按钮 -->
+        <el-button v-else text @click="isCollapse = !isCollapse" class="menu-btn">
+          <el-icon size="20"><Fold v-if="!isCollapse" /><Expand v-else /></el-icon>
+        </el-button>
         <div class="header-title">{{ pageTitle }}</div>
         <div class="header-actions">
-          <el-button type="primary" @click="$router.push('/activities/create')" v-if="isOrganizer">
+          <el-button type="primary" size="small" @click="$router.push('/activities/create')" v-if="isOrganizer">
             发布活动
           </el-button>
         </div>
@@ -68,13 +83,20 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowRight } from '@element-plus/icons-vue'
+import { ArrowRight, Menu, Fold, Expand } from '@element-plus/icons-vue'
 import { useUserStore } from '../stores/user'
 import { notificationApi } from '../api/client'
 
 const router = useRouter()
 const userStore = useUserStore()
 const unreadCount = ref(0)
+const isCollapse = ref(false)
+const isMobile = ref(false)
+
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768
+  if (isMobile.value) isCollapse.value = true
+}
 
 const isOrganizer = computed(() => ['ORGANIZER', 'ADMIN'].includes(userStore.userInfo?.role))
 const isAdmin = computed(() => userStore.userInfo?.role === 'ADMIN')
@@ -105,16 +127,56 @@ const handleLogout = () => {
 }
 
 onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
   fetchUnread()
   timer = setInterval(fetchUnread, 30000)
 })
-onUnmounted(() => clearInterval(timer))
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile)
+  clearInterval(timer)
+})
 </script>
 
 <style scoped>
 .layout-container { height: 100vh; }
-.sidebar { background: #1a1a2e; display: flex; flex-direction: column; }
-.logo { padding: 20px 16px; font-size: 18px; font-weight: bold; color: #fff; border-bottom: 1px solid #2a2a4a; }
+
+/* 侧边栏 */
+.sidebar { 
+  background: #1a1a2e; 
+  display: flex; 
+  flex-direction: column; 
+  transition: width 0.3s;
+  overflow: hidden;
+}
+.sidebar-mobile {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1000;
+  width: 220px !important;
+  transform: translateX(-100%);
+  transition: transform 0.3s;
+}
+.sidebar-mobile.sidebar-open {
+  transform: translateX(0);
+}
+.mobile-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
+}
+.logo { 
+  padding: 20px 16px; 
+  font-size: 18px; 
+  font-weight: bold; 
+  color: #fff; 
+  border-bottom: 1px solid #2a2a4a; 
+  white-space: nowrap;
+  overflow: hidden;
+}
 .sidebar-menu { background: transparent; border: none; flex: 1; }
 .sidebar-menu .el-menu-item { color: #ccc; border-radius: 8px; margin: 4px 8px; }
 .sidebar-menu .el-menu-item:hover, .sidebar-menu .el-menu-item.is-active { background: #4a4a8a; color: #fff; }
@@ -124,7 +186,36 @@ onUnmounted(() => clearInterval(timer))
 .user-panel { padding: 16px; border-top: 1px solid #2a2a4a; display: flex; align-items: center; gap: 10px; color: #ccc; }
 .username { font-size: 13px; color: #fff; }
 .role-tag { font-size: 11px; color: #aaa; }
-.header { background: #fff; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
-.header-title { font-size: 18px; font-weight: 600; color: #333; }
-.main-content { padding: 24px; background: #f5f7fa; }
+
+/* 主区域 */
+.main-container { 
+  flex: 1; 
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.header { 
+  background: #fff; 
+  border-bottom: 1px solid #eee; 
+  display: flex; 
+  align-items: center; 
+  padding: 0 12px; 
+  gap: 8px;
+  height: 56px;
+}
+.menu-btn { padding: 8px; }
+.header-title { font-size: 16px; font-weight: 600; color: #333; flex: 1; }
+.header-actions { display: flex; gap: 8px; }
+.main-content { 
+  padding: 16px; 
+  background: #f5f7fa; 
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .main-content { padding: 12px; }
+  .header-title { font-size: 15px; }
+}
 </style>
