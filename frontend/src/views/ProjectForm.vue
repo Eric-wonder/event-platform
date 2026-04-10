@@ -136,7 +136,6 @@ const form = reactive({
 
 const rules = {
   title: [{ required: true, message: '请输入项目标题', trigger: 'blur' }],
-  content: [{ required: true, message: '请输入项目详情', trigger: 'blur' }],
 }
 
 // 日期快捷选项
@@ -238,9 +237,6 @@ const handleSubmit = async () => {
 
   // 从编辑器取值
   const content = editor.value ? editor.value.txt.html() : form.content
-  console.log('[Submit] editor exists:', !!editor.value, 'content length:', content?.length, 'content:', content?.substring(0, 100))
-  // DEBUG: 弹窗显示编辑器状态
-  alert(`[DEBUG] editor: ${!!editor.value}\ncontent length: ${content?.length}\ncontent preview: ${content?.substring(0, 200)}`)
   if (!content || content === '<p><br></p>') {
     ElMessage.error('请输入项目详情')
     return
