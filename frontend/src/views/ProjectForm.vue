@@ -239,6 +239,8 @@ const handleSubmit = async () => {
   // 从编辑器取值
   const content = editor.value ? editor.value.txt.html() : form.content
   console.log('[Submit] editor exists:', !!editor.value, 'content length:', content?.length, 'content:', content?.substring(0, 100))
+  // DEBUG: 弹窗显示编辑器状态
+  alert(`[DEBUG] editor: ${!!editor.value}\ncontent length: ${content?.length}\ncontent preview: ${content?.substring(0, 200)}`)
   if (!content || content === '<p><br></p>') {
     ElMessage.error('请输入项目详情')
     return
