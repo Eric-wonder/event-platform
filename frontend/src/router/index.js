@@ -19,7 +19,7 @@ const routes = [
     component: () => import('../layouts/Layout.vue'),
     meta: { requiresAuth: true },
     children: [
-      { path: '', redirect: '/activities' },
+      { path: '', redirect: '/projects' },
 
       // 仪表盘
       {
@@ -27,36 +27,6 @@ const routes = [
         name: 'Dashboard',
         component: () => import('../views/Dashboard.vue'),
         meta: { roles: ['ADMIN'] },
-      },
-
-      // 活动赛事
-      {
-        path: 'activities',
-        name: 'ActivityList',
-        component: () => import('../views/ActivityList.vue'),
-      },
-      {
-        path: 'activities/create',
-        name: 'ActivityCreate',
-        component: () => import('../views/ActivityCreate.vue'),
-        meta: { roles: ['ORGANIZER', 'ADMIN'] },
-      },
-      {
-        path: 'activities/:id',
-        name: 'ActivityDetail',
-        component: () => import('../views/ActivityDetail.vue'),
-      },
-      {
-        path: 'activities/:id/edit',
-        name: 'ActivityEdit',
-        component: () => import('../views/ActivityCreate.vue'),
-        meta: { roles: ['ORGANIZER', 'ADMIN'] },
-      },
-      {
-        path: 'activities/:id/registrations',
-        name: 'ActivityRegistrations',
-        component: () => import('../views/ActivityRegistrations.vue'),
-        meta: { roles: ['ORGANIZER', 'ADMIN'] },
       },
 
       // 报名项目（用户端）

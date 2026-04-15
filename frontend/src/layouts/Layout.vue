@@ -11,11 +11,7 @@
       </div>
       <el-menu :default-active="$route.path" router class="sidebar-menu" :collapse="!isMobile && isCollapse">
 
-        <el-menu-item index="/activities"><span>活动列表</span></el-menu-item>
-        <el-menu-item index="/my-registrations"><span>我的报名</span></el-menu-item>
         <el-menu-item index="/projects"><span>报名项目</span></el-menu-item>
-
-        <el-menu-item v-if="isOrganizer" index="/activities/create"><span>发布活动</span></el-menu-item>
 
         <!-- 分销管理（ADMIN + 渠道管理员）-->
         <el-sub-menu v-if="isAdmin || isChannelManager" index="/distribution">
@@ -67,11 +63,6 @@
           <el-icon size="20"><Fold v-if="!isCollapse" /><Expand v-else /></el-icon>
         </el-button>
         <div class="header-title">{{ pageTitle }}</div>
-        <div class="header-actions">
-          <el-button type="primary" size="small" @click="$router.push('/activities/create')" v-if="isOrganizer">
-            发布活动
-          </el-button>
-        </div>
       </el-header>
       <el-main class="main-content">
         <router-view />
@@ -98,7 +89,6 @@ const checkMobile = () => {
   if (isMobile.value) isCollapse.value = true
 }
 
-const isOrganizer = computed(() => ['ORGANIZER', 'ADMIN'].includes(userStore.userInfo?.role))
 const isAdmin = computed(() => userStore.userInfo?.role === 'ADMIN')
 const isChannelManager = computed(() => userStore.userInfo?.role === 'CHANNEL_MANAGER')
 
@@ -106,9 +96,9 @@ const roleLabelMap = { USER: '用户', ORGANIZER: '组织者', ADMIN: '管理员
 const roleLabel = computed(() => roleLabelMap[userStore.userInfo?.role] || '')
 
 const pageTitleMap = {
-  '/activities': '活动列表', '/my-registrations': '我的报名', '/notifications': '通知',
+  '/projects': '报名项目', '/my-registrations': '我的报名', '/notifications': '通知',
   '/admin/users': '用户管理', '/admin/channels': '渠道管理', '/commissions': '佣金报表',
-  '/projects': '报名项目', '/admin/projects': '报名项目管理', '/dashboard': '仪表盘',
+  '/admin/projects': '报名项目管理', '/dashboard': '仪表盘',
   '/admin/email-settings': '邮件设置', '/admin/email-logs': '邮件日志',
 }
 const pageTitle = computed(() => {
