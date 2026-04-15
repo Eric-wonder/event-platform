@@ -20,6 +20,7 @@ const exportRoutes = require('./routes/export.routes');
 const emailRoutes = require('./routes/email.routes');
 const payRoutes = require('./routes/pay.routes');          // ← 微信支付
 const siteRoutes = require('./routes/site.routes');        // ← 网站设置
+const publicRegisterRoutes = require('./routes/public-register.routes'); // ← 公开报名
 const { errorHandler } = require('./utils/response');
 const { startEmailCron } = require('./services/cron.service');
 const { loadSettings } = require('./services/email.service');
@@ -60,6 +61,7 @@ app.use('/api/export', exportRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/pay', payRoutes);                         // ← 微信支付
 app.use('/api/site', siteRoutes);                       // ← 网站设置
+app.use('/api/public', publicRegisterRoutes);           // ← 公开报名（无需登录）
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 

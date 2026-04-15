@@ -173,3 +173,12 @@ export const siteApi = {
   get: () => api.get('/site'),
   save: data => api.put('/site', data),
 }
+
+// ─── 公开报名接口（无需登录）───────────────────────────────
+export const publicRegApi = {
+  getProject: (id) => api.get(`/projects/${id}`),
+  submit: (projectId, data) => api.post(`/public/register/${projectId}`, data),
+  checkStatus: (projectId, phone) => api.get(`/public/register/${projectId}/status`, { params: { phone } }),
+  list: (projectId, params) => api.get(`/public/${projectId}/registrations`, { params }),
+  updateStatus: (projectId, regId, status) => api.patch(`/public/${projectId}/registrations/${regId}/status`, { status }),
+}

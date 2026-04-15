@@ -112,9 +112,10 @@ model RegistrationProject {
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  registrations ProjectRegistration[]
-  fields        ProjectField[]
-  commissions   CommissionRecord[]
+  registrations     ProjectRegistration[]
+  publicRegistrations PublicRegistration[]
+  fields            ProjectField[]
+  commissions       CommissionRecord[]
 
   @@map("registration_projects")
 }
@@ -382,4 +383,23 @@ model SiteSetting {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("site_settings")
+}
+
+// ─── 公开报名记录表（无需登录）──────────────────────────────
+model PublicRegistration {
+  id          Int       @id @default(autoincrement())
+  projectId   Int       @map("project_id")
+  realName    String    @map("real_name") @db.VarChar(50)
+  phone       String    @db.VarChar(20)
+  email       String?   @db.VarChar(100)
+  answers     Json?
+  status      RegStatus @default(PENDING) @map("status")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  project     RegistrationProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, phone])
+  @@index([projectId, status])
+  @@map("public_registrations")
 }

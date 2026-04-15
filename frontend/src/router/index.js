@@ -144,6 +144,13 @@ const routes = [
       },
     ],
   },
+  // 公开报名页（无需登录）
+  {
+    path: '/register/:projectId',
+    name: 'PublicRegister',
+    component: () => import('../views/PublicRegister.vue'),
+    meta: { title: '活动报名' },
+  },
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
