@@ -35,6 +35,20 @@
           <el-input v-model="form.contactPhone" placeholder="400-xxx-xxxx" />
         </el-form-item>
 
+        <el-divider content-position="left">🌐 自定义域名</el-divider>
+
+        <el-form-item label="域名地址">
+          <el-input v-model="form.customDomain" placeholder="activity.example.com" clearable>
+            <template #prepend>https://</template>
+          </el-input>
+          <div style="margin-top:6px;color:#909399;font-size:12px">
+            填写您已解析到此服务器的域名。保存后，用户可通过该域名直接访问平台，无需再输入 IP + 端口。
+          </div>
+          <div v-if="form.customDomain" style="margin-top:6px;color:#e6a23c;font-size:12px">
+            ⚠️ 请确保域名已正确解析到本服务器 IP，否则域名将无法访问。
+          </div>
+        </el-form-item>
+
         <el-form-item>
           <el-button type="primary" :loading="saving" @click="handleSave">💾 保存设置</el-button>
         </el-form-item>
@@ -91,6 +105,7 @@ const form = reactive({
   icpNumber: '',
   contactEmail: '',
   contactPhone: '',
+  customDomain: '',
 })
 
 const fetchSettings = async () => {
