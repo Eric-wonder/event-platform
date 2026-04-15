@@ -108,6 +108,14 @@ const routes = [
         meta: { roles: ['ADMIN'] },
       },
 
+      // 网站设置（ADMIN）
+      {
+        path: 'admin/site-settings',
+        name: 'SiteSettings',
+        component: () => import('../views/SiteSettings.vue'),
+        meta: { roles: ['ADMIN'] },
+      },
+
       // 用户报名 + 通知
       {
         path: 'my-registrations',

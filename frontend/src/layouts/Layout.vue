@@ -6,7 +6,8 @@
     <!-- 侧边栏 -->
     <el-aside :width="isMobile ? '0px' : (isCollapse ? '64px' : '220px')" class="sidebar" :class="{ 'sidebar-mobile': isMobile, 'sidebar-open': isMobile && !isCollapse }">
       <div class="logo">
-        <span v-if="!isCollapse || isMobile">🏆 活动平台</span>
+        <img v-if="siteLogo" :src="siteLogo" class="logo-img" />
+        <span v-else-if="!isCollapse || isMobile">🏆 {{ siteName }}</span>
         <span v-else>🏆</span>
       </div>
       <el-menu :default-active="$route.path" router class="sidebar-menu" :collapse="!isMobile && isCollapse">
@@ -29,6 +30,7 @@
           <el-divider style="margin:4px 12px;border-color:#444" />
           <el-menu-item index="/admin/email-settings">📧 邮件设置</el-menu-item>
           <el-menu-item index="/admin/email-logs">📋 邮件日志</el-menu-item>
+          <el-menu-item index="/admin/site-settings">🌐 网站设置</el-menu-item>
         </el-sub-menu>
 
         <el-menu-item index="/notifications">
@@ -76,13 +78,15 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowRight, Menu, Fold, Expand } from '@element-plus/icons-vue'
 import { useUserStore } from '../stores/user'
-import { notificationApi } from '../api/client'
+import { notificationApi, siteApi } from '../api/client'
 
 const router = useRouter()
 const userStore = useUserStore()
 const unreadCount = ref(0)
 const isCollapse = ref(false)
 const isMobile = ref(false)
+const siteName = ref('活动平台')
+const siteLogo = ref('')
 
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 768
@@ -100,6 +104,7 @@ const pageTitleMap = {
   '/admin/users': '用户管理', '/admin/channels': '渠道管理', '/commissions': '佣金报表',
   '/admin/projects': '报名项目管理', '/dashboard': '仪表盘',
   '/admin/email-settings': '邮件设置', '/admin/email-logs': '邮件日志',
+  '/admin/site-settings': '网站设置',
 }
 const pageTitle = computed(() => {
   const path = router.currentRoute.value.path
@@ -111,6 +116,13 @@ const fetchUnread = () => {
   notificationApi.unreadCount().then(res => { unreadCount.value = res.data?.count || 0 }).catch(() => {})
 }
 
+const fetchSiteSettings = () => {
+  siteApi.get().then(res => {
+    if (res.data?.siteName) siteName.value = res.data.siteName
+    if (res.data?.siteLogo) siteLogo.value = res.data.siteLogo
+  }).catch(() => {})
+}
+
 const handleLogout = () => {
   userStore.logout()
   router.push('/login')
@@ -120,7 +132,11 @@ onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
   fetchUnread()
+  fetchSiteSettings()
   timer = setInterval(fetchUnread, 30000)
+  
+  // 监听网站设置更新
+  window.addEventListener('site-settings-updated', fetchSiteSettings)
 })
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
@@ -166,7 +182,11 @@ onUnmounted(() => {
   border-bottom: 1px solid #2a2a4a; 
   white-space: nowrap;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+.logo-img { height: 28px; width: auto; object-fit: contain; }
 .sidebar-menu { background: transparent; border: none; flex: 1; }
 .sidebar-menu .el-menu-item { color: #ccc; border-radius: 8px; margin: 4px 8px; }
 .sidebar-menu .el-menu-item:hover, .sidebar-menu .el-menu-item.is-active { background: #4a4a8a; color: #fff; }

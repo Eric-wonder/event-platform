@@ -19,6 +19,7 @@ const commissionRoutes = require('./routes/commission.routes');
 const exportRoutes = require('./routes/export.routes');
 const emailRoutes = require('./routes/email.routes');
 const payRoutes = require('./routes/pay.routes');          // ← 微信支付
+const siteRoutes = require('./routes/site.routes');        // ← 网站设置
 const { errorHandler } = require('./utils/response');
 const { startEmailCron } = require('./services/cron.service');
 const { loadSettings } = require('./services/email.service');
@@ -58,6 +59,7 @@ app.use('/api/commissions', commissionRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/pay', payRoutes);                         // ← 微信支付
+app.use('/api/site', siteRoutes);                       // ← 网站设置
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 

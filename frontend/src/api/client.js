@@ -167,3 +167,9 @@ export const payApi = {
   // 当前用户支付订单列表
   orders: params => api.get('/pay/orders', { params }),
 }
+
+// ─── 网站设置接口 ─────────────────────────────────────────
+export const siteApi = {
+  get: () => api.get('/site'),
+  save: data => api.put('/site', data),
+}
