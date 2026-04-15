@@ -146,6 +146,7 @@ export const exportApi = {
 export const emailApi = {
   getSettings: () => api.get('/email/settings'),
   saveSettings: data => api.put('/email/settings', data),
+  saveSmtpEnv: data => api.put('/email/smtp-env', data),
   sendTest: to => api.post('/email/test', { to }),
   sendProject: (projectId, extraEmails) => api.post(`/email/send-project/${projectId}`, { extraEmails }),
   logs: params => api.get('/email/logs', { params }),

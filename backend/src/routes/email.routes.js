@@ -26,6 +26,44 @@ router.get('/settings', catchAsync(async (req, res) => {
   }));
 }));
 
+// ─── 保存 SMTP 环境变量 ─────────────────────────────────
+router.put('/smtp-env', catchAsync(async (req, res) => {
+  const { smtpHost, smtpPort, smtpUser, smtpPass } = req.body;
+  if (!smtpHost || !smtpUser) {
+    return res.status(400).json(fail(40001, 'SMTP 服务器和用户名不能为空'));
+  }
+
+  // 读取当前 .env
+  const envPath = require('path').resolve(__dirname, '../../.env');
+  const fs = require('fs');
+  let envContent = '';
+  try { envContent = fs.readFileSync(envPath, 'utf8'); } catch {}
+
+  // 更新或添加 SMTP 配置
+  const lines = envContent.split('\n');
+  const newLines = [];
+  const keys = { SMTP_HOST: smtpHost, SMTP_PORT: String(smtpPort), SMTP_USER: smtpUser, SMTP_PASS: smtpPass || '' };
+  let found = { SMTP_HOST: false, SMTP_PORT: false, SMTP_USER: false, SMTP_PASS: false };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) { newLines.push(line); continue; }
+    const [key] = trimmed.split('=');
+    if (keys.hasOwnProperty(key)) {
+      found[key] = true;
+      newLines.push(`${key}=${keys[key]}`);
+    } else {
+      newLines.push(line);
+    }
+  }
+  for (const [key, val] of Object.entries(keys)) {
+    if (val && !found[key]) newLines.push(`${key}=${val}`);
+  }
+
+  fs.writeFileSync(envPath, newLines.join('\n'), 'utf8');
+  res.json(success(null, 'SMTP 配置已写入 .env，重启服务后生效'));
+}));
+
 // ─── 保存邮件设置 ─────────────────────────────────────────
 router.put('/settings', catchAsync(async (req, res) => {
   const { toEmails, cronEnabled, cronTime } = req.body;
